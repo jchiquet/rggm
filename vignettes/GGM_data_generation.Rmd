@@ -1,0 +1,71 @@
+---
+title: "Generating Gaussian data from a Graphical Model with SBM structure"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GGM_data_generation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Préliminaires
+
+```{r packages, message = FALSE, warnings = FALSE}
+library(rggm)
+library(igraph)
+# library(corrplot)
+library(Matrix)
+```
+
+## Paramètres du réseau
+
+On défnit par exemple un réseau avec 12O noeuds et une structure de 4 blocs:
+
+```{r parameters}
+nNodes  <- 90
+blockProp <- c(.5, .25, .25)   # group proportions
+nbBlock   <- length(blockProp) # number of blocks
+connectParam <- diag(.4, nbBlock) + 0.05 # connectivity matrix: affiliation network
+```
+
+## Tirage d'un SBM
+
+Le package `igraph` permet de tirer un SBM binaire sous ces paramètres ^[les groupes sont fixés et les noeuds ordonnées dans les groupe correpondants].
+
+```{r SBM}
+## Graph Sampling
+mySBM <- rSBM(nNodes, connectParam, blockProp)
+## Graph plotting
+plot(mySBM, vertex.color = igraph::V(mySBM)$memberships)
+```
+
+## Tirage des poids
+
+On prends les poids Gaussiens dont les paramètres de moyenne et variance sont asosciés aux blocs:
+
+```{r Gaussian weights}
+## Sampling Gaussian weights
+mu_within   <- 4 ; sigma_within  <- .5
+mu_between  <- 2 ; sigma_between <- .5
+theta <- list()
+theta$mu    <- matrix(mu_between   , nbBlock, nbBlock); diag(theta$mu)    <- mu_within    # means
+theta$sigma <- matrix(sigma_between, nbBlock, nbBlock); diag(theta$sigma) <- sigma_within # sd
+```
+
+Résultat convaincant
+```{r Gaussian weights plot}
+mySBM <- rWeightSBM(mySBM, "gaussian", theta)
+hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)))
+```
+
+## Construction de la matrice de précision et de variance-covariance
+
+À SUIVRE...
+
