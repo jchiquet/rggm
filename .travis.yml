@@ -1,0 +1,23 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+# Travis CI for automatic building.
+#
+# Changelog:
+#  - 2020-03-27: creation
+
+language: R
+cache: packages
+
+r_check_args: --as-cran
+sudo: required
+
+warnings_are_errors: false
+
+matrix:
+  include:
+    - os: osx
+      r: release
+    - os: linux
+      r: devel
+    - os: linux
+      r: release
