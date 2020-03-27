@@ -1,0 +1,15 @@
+Package: rggm
+Title: draw gaussian data from a sampled graphical model
+Version: 0.0.0.9000
+Authors@R: c(
+  person("Julien", "Chiquet", role = c("aut", "cre"), email = "julien.chiquet@inrae.fr",
+      comment = c(ORCID = "0000-0002-3629-3429"))
+  )
+Description: Collection of functions to generate data from Gaussian Graphical model and the stochastc block model.
+URL: https://jchiquet.github.io/PLNmodels/
+BugReports: https://github.com/jchiquet/PLNmodels/issues
+Encoding: UTF-8
+RoxygenNote: 7.0.2
+Depends: R (>= 3.4)
+LazyData: true
+License: GPL-3
