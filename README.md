@@ -12,6 +12,6 @@ Drawing Gaussian data from a given Graphical model has always been an pain. This
 You can install the dev version of rggm with:
 
 ``` r
-install.packages("rggm")
+devtools::install_github("jchiquet/rggm")
 ```
 
