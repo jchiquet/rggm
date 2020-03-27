@@ -61,3 +61,28 @@ graph2prec <- function(graph, neg_prop = .5, cond_var = NULL, epsilon = 1e-2, de
   Omega
 }
 
+#' Generate multivariate Gaussian observations
+#'
+#' This function generates multivariate Gaussian ove
+#'
+#' @param n the sample size
+#' @param means a vector of means
+#' @param covariance a variacen-covariance matrix
+#'
+#' @importFrom Matrix chol
+#' @return a matrix with n rows
+#' @export
+rmgaussian <- function(n, means, covariance) {
+
+  p <- length(means)
+  stopifnot(all(dim(covariance) == p))
+
+  if (is.matrix(covariance))
+    CHOL <- base::chol
+  if (class(covariance) == 'dgCMatrix')
+    CHOL <- Matrix::chol
+
+  sample <- sweep(matrix(rnorm(n*p),n,p) %*% CHOL(covariance), 2, means)
+
+  sample
+}

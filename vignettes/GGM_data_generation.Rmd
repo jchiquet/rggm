@@ -11,11 +11,12 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  fig.width = 7,
   comment = "#>"
 )
 ```
 
-## Préliminaires
+## Preliminaries
 
 ```{r packages, message = FALSE, warnings = FALSE}
 library(rggm)
@@ -24,9 +25,11 @@ library(corrplot)
 library(Matrix)
 ```
 
-## Paramètres du réseau
+## Generating a graph under the stochastic bloc model
 
-On définit par exemple un réseau avec 12O noeuds et une structure de 4 blocs:
+###  SBM parameters
+
+We consider in the following an undirect network $\mathcal{G}$ with 100 nodes splitted into 3 blocks with community-like connectivity:
 
 ```{r parameters}
 nNodes  <- 90
@@ -35,20 +38,22 @@ nbBlock   <- length(blockProp) # number of blocks
 connectParam <- diag(.4, nbBlock) + 0.05 # connectivity matrix: affiliation network
 ```
 
-## Tirage d'un SBM
+### Sampling under the SBM
 
-Le package `igraph` permet de tirer un SBM binaire sous ces paramètres ^[les groupes sont fixés et les noeuds ordonnées dans les groupe correpondants].
+The function `rSBM` sample a binary network under the SBM. Let us try the aformentioned set of parameters:
 
-```{r SBM}
+```{r SBM sampling}
 ## Graph Sampling
 mySBM <- rSBM(nNodes, connectParam, blockProp)
 ## Graph plotting
 plot(mySBM, vertex.color = igraph::V(mySBM)$memberships)
 ```
 
-## Tirage des poids
+### Adding weights to the edges
 
-On prends les poids Gaussiens dont les paramètres de moyenne et variance sont asosciés aux blocs:
+In **rggm**, the user can add some random weights to the edges of an existing SBM. Those weigths are drawn under a predefined distribution (only "gaussian" and "poisson" are implemented at the moment) the parameters of which are defined blocwise
+
+We consider for instance Gaussian weights in this piece of code:
 
 ```{r Gaussian weights}
 ## Sampling Gaussian weights
@@ -62,31 +67,55 @@ theta$sigma <- matrix(sigma_between, nbBlock, nbBlock); diag(theta$sigma) <- sig
 Résultat convaincant
 ```{r Gaussian weights plot}
 mySBM <- rWeightSBM(mySBM, "gaussian", theta)
-hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)))
+hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)), freq = FALSE, xlab = "weights", main = "histogram of weights")
 ```
 
-## Construction de la matrice de précision et de variance-covariance
+## Drawing multivariate Gaussian observations faithful to a the graph
 
-La fonction `graph2prec` permet de construire une matrice de précision fidèle au modèle graphique d'origine. Un argument optionnel permet de fixer la valeur des variances conditionnelles, c'est-à-dire l'inverse de la diagonale de la matrice de précision. Cette argument permet indirectement de fixer les termes diagonaux de la matrice de variance covariance
+Consider the multivariate Gaussian model 
+\[
+  X \sim \mathcal{N}(\mathbf{m}, \boldsymbol\Sigma), \qquad \text{with } \boldsymbol\Omega = \boldsymbol\Sigma^{-1} \text{ the precision matrix}.
+\]
+
+We would like to drawn observation of the Gaussian vector $X$ such that $\boldsymbol\Omega$ has a sparsity pattern faithful to the orginal graph $\mathcal{G}$ generated under the SBM.
+
+### Constructing the precision matrix and the variance-covariance
+
+The function `graph2prec` allows one to build a precision matrix $\boldsymbol\Omega$ faitful to the original graph, that is, with a sparsity pattern reflecting the graphical model of the SBM generated above. To this end, we rely on the Laplacian matrix which is set diagonal dominant by increasing iteratively its diagonal. Note that when the graph is weighted, the weighted Laplacian is used.
+
+An optional argument allows to fix the conditional variance _a priori_^[conditional variances are equal to the inverse of the diagonal in a precision matrix]. This argument allows the user to indirectly tune the variances in the variance-covariance matrix $\boldsymbol\Sigma$.
+
+For instance, if we want to fix the conditional variances to 1 (a thus get variances all equal to 1), 
 
 ```{r precision matrix}
 Omega <- graph2prec(mySBM, cond_var = rep(1, gorder(mySBM)))
 ```
 
-Dans ce cas, les variance sont unitaires :
+
+The variance-covariance $\boldsymbol\Sigma$ is then obtain be inversion, since $\boldsymbol\Omega$ is guaranted to be strictly positive-definite.
 
 ```{r covariance}
 Sigma <- solve(Omega)
-Omega_plot <- as.matrix(Omega); diag(Omega_plot) <- NA
-Sigma_plot <- as.matrix(Sigma); diag(Sigma_plot) <- NA
-par(mfrow = c(1,2))
-corrplot(Omega_plot, method = "color", is.corr = FALSE, tl.pos = "n")
-corrplot(Sigma_plot, method = "color", is.corr = FALSE, tl.pos = "n")
-hist(Omega_plot)
-hist(Sigma_plot)
-
 ```
 
+The corresponding matrices exhibit the expected strong blocwise, diagonal structure of the original affilitation graph.
 
-À SUIVRE...
+```{r plot, message = FALSE}
+par(mfrow = c(1,2))
+corrplot(as.matrix(Omega), is.corr = FALSE, tl.pos = "n", method = 'color', type = "upper", diag = FALSE)
+corrplot(as.matrix(Sigma), is.corr = FALSE, tl.pos = "n", method = 'color', type = "upper", diag = FALSE)
+hist(Sigma[upper.tri(Sigma)])
+hist(Omega[upper.tri(Omega)])
+```
 
+### Gaussian Observations
+
+```{r gaussian observation}
+n <- 1000
+means <- rep(0, ncol(Sigma))
+X <- rmgaussian(n, means, Sigma)
+Sigma_hat <- cov(as.matrix(X))
+corrplot(Sigma_hat, is.corr = FALSE, method = 'color', type = "upper", diag = FALSE, tl.pos = "n")
+```
+
+TO BE CONTINUED -> signal seems a bit weak...
