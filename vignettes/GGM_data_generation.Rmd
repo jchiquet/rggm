@@ -20,13 +20,13 @@ knitr::opts_chunk$set(
 ```{r packages, message = FALSE, warnings = FALSE}
 library(rggm)
 library(igraph)
-# library(corrplot)
+library(corrplot)
 library(Matrix)
 ```
 
 ## Paramètres du réseau
 
-On défnit par exemple un réseau avec 12O noeuds et une structure de 4 blocs:
+On définit par exemple un réseau avec 12O noeuds et une structure de 4 blocs:
 
 ```{r parameters}
 nNodes  <- 90
@@ -66,6 +66,27 @@ hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)))
 ```
 
 ## Construction de la matrice de précision et de variance-covariance
+
+La fonction `graph2prec` permet de construire une matrice de précision fidèle au modèle graphique d'origine. Un argument optionnel permet de fixer la valeur des variances conditionnelles, c'est-à-dire l'inverse de la diagonale de la matrice de précision. Cette argument permet indirectement de fixer les termes diagonaux de la matrice de variance covariance
+
+```{r precision matrix}
+Omega <- graph2prec(mySBM, cond_var = rep(1, gorder(mySBM)))
+```
+
+Dans ce cas, les variance sont unitaires :
+
+```{r covariance}
+Sigma <- solve(Omega)
+Omega_plot <- as.matrix(Omega); diag(Omega_plot) <- NA
+Sigma_plot <- as.matrix(Sigma); diag(Sigma_plot) <- NA
+par(mfrow = c(1,2))
+corrplot(Omega_plot, method = "color", is.corr = FALSE, tl.pos = "n")
+corrplot(Sigma_plot, method = "color", is.corr = FALSE, tl.pos = "n")
+hist(Omega_plot)
+hist(Sigma_plot)
+
+```
+
 
 À SUIVRE...
 

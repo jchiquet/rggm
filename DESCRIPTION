@@ -20,5 +20,6 @@ Imports:
   Matrix
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    corrplot
 VignetteBuilder: knitr
