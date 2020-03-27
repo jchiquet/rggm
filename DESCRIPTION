@@ -6,8 +6,8 @@ Authors@R: c(
       comment = c(ORCID = "0000-0002-3629-3429"))
   )
 Description: Collection of functions to generate data from Gaussian Graphical model and the stochastic block model.
-URL: https://jchiquet.github.io/PLNmodels/
-BugReports: https://github.com/jchiquet/PLNmodels/issues
+URL: https://jchiquet.github.io/rggm/
+BugReports: https://github.com/jchiquet/rggm/issues
 Encoding: UTF-8
 RoxygenNote: 7.1.0
 Depends: R (>= 3.4)
