@@ -2,13 +2,13 @@
 #'
 #' This function samples a realization of a stochastic block model from a set a user-defined parameters in a igraĥ format.
 #'
-#' @param nNodes number of nodes in the graph
+#' @param nbNodes number of nodes in the graph
 #' @param connectParam inter and intra block connection probabilities
 #' @param blockProp proportion of node in each block of the SBM
 #'
 #' @return an igraph object with a vertex attribute called "memberships" for block belonging
 #'
-#' @example
+#' @examples
 #' ## graph parameters
 #' nNodes  <- 90
 #' blockProp <- c(.5, .25, .25)   # group proportions
@@ -19,9 +19,9 @@
 #' mySBM <- rSBM(nNodes, connectParam, blockProp)
 #'
 #' ## Graph plotting
-#' igraph::plot(mySBM, vertex.color = V(mySBM)$memberships)
+#' plot(mySBM, vertex.color = igraph::V(mySBM)$memberships)
 #'
-#' @importFrom igraph sample_sbm, set_vertex_attr, plot
+#' @importFrom igraph sample_sbm set_vertex_attr plot.igraph V
 #' @importFrom stats rmultinom
 #' @export
 rSBM <- function(nbNodes, connectParam, blockProp) {
@@ -49,7 +49,7 @@ rSBM <- function(nbNodes, connectParam, blockProp) {
 #'
 #' @return an SBM weight weigthed edges
 #'
-#' @example
+#' @examples
 #' ## graph parameters
 #' nbNodes  <- 90
 #' blockProp <- c(.5, .25, .25)   # group proportions
@@ -70,8 +70,8 @@ rSBM <- function(nbNodes, connectParam, blockProp) {
 #'
 #' hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)))
 #'
-#' @imporFrom stats rnorm, rpois
-#' @importFrom igraph set_edge_attr, get.data.frame, graph_attr, V, E, gsize
+#' @importFrom stats rnorm rpois
+#' @importFrom igraph set_edge_attr get.data.frame graph_attr V E gsize
 #' @export
 rWeightSBM <- function(anSBM, family = c("gaussian", "poisson"), theta) {
 
