@@ -135,7 +135,7 @@
     <p>This function draws weights according to a user-defined distribution for the edges of an existing binary SBM.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>rWeightSBM</span>(<span class='no'>anSBM</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"gaussian"</span>, <span class='st'>"poisson"</span>), <span class='no'>theta</span>)</pre>
+    <pre class="usage"><span class='fu'>rWeightSBM</span>(<span class='no'>anSBM</span>, <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"gaussian"</span>, <span class='st'>"poisson"</span>, <span class='st'>"laplace"</span>), <span class='no'>theta</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,12 +150,13 @@
     </tr>
     <tr>
       <th>theta</th>
-      <td><p>list embedding parameters required for the distribution of the weights. See details.</p>
+      <td><p>list embedding parameters required for the distribution of the weights. Either "gaussian", "poisson" or "laplace". See details.</p>
 <p>Elements in the <code>theta</code> should be named as follows, depending on the argument <code>family</code>, with
 dimension matching the number of blocks in the original SBM:</p><ul>
-<li><p>Gaussian<code>theta$mu</code>, a (nbBlock x nbBlock) matrix of means; <code>theta$sigma</code>, a (nbBlock x nbBlock) matrix of standa deviation</p></li>
-<li><p>Poisson<code>theta$lambda</code>, , a (nbBlock x nbBlock) matrix of means.</p></li>
-<li><p>Otherszoon available.</p></li>
+<li><p>Gaussian<code>theta$mu</code>, a (nbBlock x nbBlock) matrix of means; <code>theta$sigma</code>, a (nbBlock x nbBlock) matrix of standard deviations</p></li>
+<li><p>Laplace<code>theta$m</code>, a (nbBlock x nbBlock) matrix of location parameters; <code>theta$s</code>, a (nbBlock x nbBlock) matrix of scale parameters</p></li>
+<li><p>Poisson<code>theta$lambda</code>, a (nbBlock x nbBlock) matrix of means.</p></li>
+<li><p>Otherssoon available.</p></li>
 </ul></td>
     </tr>
     </table>
@@ -181,8 +182,24 @@ dimension matching the number of blocks in the original SBM:</p><ul>
 <span class='no'>theta</span>$<span class='no'>mu</span>    <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='no'>mu_between</span>   , <span class='no'>nbBlock</span>, <span class='no'>nbBlock</span>); <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='no'>theta</span>$<span class='no'>mu</span>)    <span class='kw'>&lt;-</span> <span class='no'>mu_within</span>    <span class='co'># means</span>
 <span class='no'>theta</span>$<span class='no'>sigma</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='no'>sigma_between</span>, <span class='no'>nbBlock</span>, <span class='no'>nbBlock</span>); <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='no'>theta</span>$<span class='no'>sigma</span>) <span class='kw'>&lt;-</span> <span class='no'>sigma_within</span> <span class='co'># sd</span>
 
-<span class='no'>mySBM</span> <span class='kw'>&lt;-</span> <span class='fu'>rWeightSBM</span>(<span class='no'>mySBM</span>, <span class='st'>"gaussian"</span>, <span class='no'>theta</span>)</div><div class='output co'>#&gt; <span class='error'>Error in igraph::gsize(mySBM): object 'mySBM' not found</span></div><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/graphics/hist.html'>hist</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span>(<span class='no'>mySBM</span>)$<span class='no'>weight</span>,  <span class='kw'>breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/gsize.html'>gsize</a></span>(<span class='no'>mySBM</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in hist.default(igraph::E(mySBM)$weight, breaks = sqrt(igraph::gsize(mySBM))): 'x' must be numeric</span></div><div class='input'>
+<span class='no'>mySBM_Gaussian</span> <span class='kw'>&lt;-</span> <span class='fu'>rWeightSBM</span>(<span class='no'>mySBM</span>, <span class='st'>"gaussian"</span>, <span class='no'>theta</span>)</div><div class='output co'>#&gt; <span class='error'>Error in igraph::gsize(mySBM): object 'mySBM' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/hist.html'>hist</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span>(<span class='no'>mySBM_Gaussian</span>)$<span class='no'>weight</span>,  <span class='kw'>breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/gsize.html'>gsize</a></span>(<span class='no'>mySBM_Gaussian</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in "igraph" %in% class(graph): object 'mySBM_Gaussian' not found</span></div><div class='input'>
+<span class='co'>## Sampling Laplace weights</span>
+<span class='no'>m_within</span>   <span class='kw'>&lt;-</span> <span class='fl'>4</span> ; <span class='no'>s_within</span>  <span class='kw'>&lt;-</span> <span class='fl'>.5</span>
+<span class='no'>m_between</span>  <span class='kw'>&lt;-</span> <span class='fl'>2</span> ; <span class='no'>s_between</span> <span class='kw'>&lt;-</span> <span class='fl'>.5</span>
+<span class='no'>theta</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>()
+<span class='no'>theta</span>$<span class='no'>m</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='no'>m_between</span>, <span class='no'>nbBlock</span>, <span class='no'>nbBlock</span>); <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='no'>theta</span>$<span class='no'>m</span>) <span class='kw'>&lt;-</span> <span class='no'>m_within</span> <span class='co'># location parameter</span>
+<span class='no'>theta</span>$<span class='no'>s</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='no'>s_between</span>, <span class='no'>nbBlock</span>, <span class='no'>nbBlock</span>); <span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='no'>theta</span>$<span class='no'>s</span>) <span class='kw'>&lt;-</span> <span class='no'>s_within</span> <span class='co'># scale parameters</span>
+
+<span class='no'>mySBM_Laplace</span> <span class='kw'>&lt;-</span> <span class='fu'>rWeightSBM</span>(<span class='no'>mySBM</span>, <span class='st'>"laplace"</span>, <span class='no'>theta</span>)</div><div class='output co'>#&gt; <span class='error'>Error in igraph::gsize(mySBM): object 'mySBM' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/hist.html'>hist</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span>(<span class='no'>mySBM_Laplace</span>)$<span class='no'>weight</span>,  <span class='kw'>breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/gsize.html'>gsize</a></span>(<span class='no'>mySBM_Laplace</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in "igraph" %in% class(graph): object 'mySBM_Laplace' not found</span></div><div class='input'>
+<span class='co'>## Sampling Poisson weights</span>
+<span class='no'>lambda_within</span>   <span class='kw'>&lt;-</span> <span class='fl'>4</span>
+<span class='no'>lambda_between</span>  <span class='kw'>&lt;-</span> <span class='fl'>4</span>
+<span class='no'>theta</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>()
+<span class='co'># mean/variance parameter</span>
+<span class='no'>theta</span>$<span class='no'>lambda</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span>(<span class='no'>lambda_between</span>, <span class='no'>nbBlock</span>, <span class='no'>nbBlock</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span>(<span class='no'>theta</span>$<span class='no'>lambda</span>) <span class='kw'>&lt;-</span> <span class='no'>lambda_within</span>
+
+<span class='no'>mySBM_Poisson</span> <span class='kw'>&lt;-</span> <span class='fu'>rWeightSBM</span>(<span class='no'>mySBM</span>, <span class='st'>"poisson"</span>, <span class='no'>theta</span>)</div><div class='output co'>#&gt; <span class='error'>Error in igraph::gsize(mySBM): object 'mySBM' not found</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/graphics/hist.html'>hist</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/E.html'>E</a></span>(<span class='no'>mySBM_Poisson</span>)$<span class='no'>weight</span>,  <span class='kw'>breaks</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span>(<span class='kw pkg'>igraph</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/igraph/man/gsize.html'>gsize</a></span>(<span class='no'>mySBM_Poisson</span>)))</div><div class='output co'>#&gt; <span class='error'>Error in "igraph" %in% class(graph): object 'mySBM_Poisson' not found</span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
