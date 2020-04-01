@@ -30,7 +30,7 @@
 #' @importFrom Matrix diag Diagonal
 #' @importFrom igraph laplacian_matrix degree is_igraph
 #' @export
-graph2prec <- function(graph, neg_prop = .5, cond_var = NULL, epsilon = 1e-2, delta = 1e-1, maxIter = 1e4) {
+graph2prec <- function(graph, neg_prop = .5, cond_var = NULL, epsilon = 1e-3, delta = 1e-2, maxIter = 1e4) {
 
   ## routine checks
   stopifnot(is_igraph(graph))

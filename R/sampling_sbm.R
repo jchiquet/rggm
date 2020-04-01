@@ -37,14 +37,15 @@ rSBM <- function(nbNodes, connectParam, blockProp) {
 #'
 #' @param anSBM SBM sampled from the rSBM function with nbBlock
 #' @param family character describing the distribution used for the weigths
-#' @param theta list embedding parameters required for the distribution of the weights. See details.
+#' @param theta list embedding parameters required for the distribution of the weights. Either "gaussian", "poisson" or "laplace". See details.
 #'
 #' Elements in the \code{theta} should be named as follows, depending on the argument \code{family}, with
 #' dimension matching the number of blocks in the original SBM:
 #' \itemize{
-#'   \item{Gaussian}{\code{theta$mu}, a (nbBlock x nbBlock) matrix of means; \code{theta$sigma}, a (nbBlock x nbBlock) matrix of standa deviation}
-#'   \item{Poisson}{\code{theta$lambda}, , a (nbBlock x nbBlock) matrix of means.}
-#'   \item{Others}{zoon available.}
+#'   \item{Gaussian}{\code{theta$mu}, a (nbBlock x nbBlock) matrix of means; \code{theta$sigma}, a (nbBlock x nbBlock) matrix of standard deviations}
+#'   \item{Laplace}{\code{theta$m}, a (nbBlock x nbBlock) matrix of location parameters; \code{theta$s}, a (nbBlock x nbBlock) matrix of scale parameters}
+#'   \item{Poisson}{\code{theta$lambda}, a (nbBlock x nbBlock) matrix of means.}
+#'   \item{Others}{soon available.}
 #' }
 #'
 #' @return an SBM weight weigthed edges
@@ -66,20 +67,40 @@ rSBM <- function(nbNodes, connectParam, blockProp) {
 #' theta$mu    <- matrix(mu_between   , nbBlock, nbBlock); diag(theta$mu)    <- mu_within    # means
 #' theta$sigma <- matrix(sigma_between, nbBlock, nbBlock); diag(theta$sigma) <- sigma_within # sd
 #'
-#' mySBM <- rWeightSBM(mySBM, "gaussian", theta)
+#' mySBM_Gaussian <- rWeightSBM(mySBM, "gaussian", theta)
+#' hist(igraph::E(mySBM_Gaussian)$weight,  breaks = sqrt(igraph::gsize(mySBM_Gaussian)))
 #'
-#' hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)))
+#' ## Sampling Laplace weights
+#' m_within   <- 4 ; s_within  <- .5
+#' m_between  <- 2 ; s_between <- .5
+#' theta <- list()
+#' theta$m <- matrix(m_between, nbBlock, nbBlock); diag(theta$m) <- m_within # location parameter
+#' theta$s <- matrix(s_between, nbBlock, nbBlock); diag(theta$s) <- s_within # scale parameters
+#'
+#' mySBM_Laplace <- rWeightSBM(mySBM, "laplace", theta)
+#' hist(igraph::E(mySBM_Laplace)$weight,  breaks = sqrt(igraph::gsize(mySBM_Laplace)))
+#'
+#' ## Sampling Poisson weights
+#' lambda_within   <- 4
+#' lambda_between  <- 4
+#' theta <- list()
+#' # mean/variance parameter
+#' theta$lambda <- matrix(lambda_between, nbBlock, nbBlock)
+#' diag(theta$lambda) <- lambda_within
+#'
+#' mySBM_Poisson <- rWeightSBM(mySBM, "poisson", theta)
+#' hist(igraph::E(mySBM_Poisson)$weight,  breaks = sqrt(igraph::gsize(mySBM_Poisson)))
 #'
 #' @importFrom stats rnorm rpois
 #' @importFrom igraph set_edge_attr get.data.frame graph_attr V E gsize
 #' @export
-rWeightSBM <- function(anSBM, family = c("gaussian", "poisson"), theta) {
+rWeightSBM <- function(anSBM, family = c("gaussian", "poisson", "laplace"), theta) {
 
   ## initializations and routines checks
   stopifnot(igraph::graph_attr(anSBM)$name == "Stochastic block-model")
   stopifnot(!is.null(igraph::V(anSBM)$memberships))
   family <- match.arg(family)
-  stopifnot(family %in% c("gaussian", "poisson"))
+  stopifnot(family %in% c("gaussian", "poisson", "laplace"))
   nbEdges  <- igraph::gsize(mySBM)
   nbBlocks <- length(unique(igraph::V(mySBM)$memberships))
   stopifnot(all(sapply(theta, dim) == nbBlocks))
@@ -91,9 +112,10 @@ rWeightSBM <- function(anSBM, family = c("gaussian", "poisson"), theta) {
 
   ## drawing Gaussian weigths conditional on node's membership
   weights <- switch(family,
-                  "gaussian" = rnorm(nbEdges, theta$mu[memberships_pairs] , theta$sigma[memberships_pairs]),
-                  "poisson"  = rpois(nbEdges, theta$lambda[memberships_pairs])
-  )
+                  "gaussian" = rnorm(nbEdges   , theta$mu[memberships_pairs] , theta$sigma[memberships_pairs]),
+                  "laplace"  = rlaplace(nbEdges, theta$m[memberships_pairs]  , theta$s[memberships_pairs]),
+                  "poisson"  = rpois(nbEdges   , theta$lambda[memberships_pairs])
+                  )
 
   mySBM <- igraph::set_edge_attr(mySBM, "weight", value = weights)
   mySBM
