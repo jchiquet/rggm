@@ -33,9 +33,9 @@ We consider in the following an undirect network $\mathcal{G}$ with 100 nodes sp
 
 ```{r parameters}
 nNodes  <- 90
-blockProp <- c(.5, .25, .25)   # group proportions
+blockProp <- c(1/3, 1/3, 1/3)   # group proportions
 nbBlock   <- length(blockProp) # number of blocks
-connectParam <- diag(.4, nbBlock) + 0.05 # connectivity matrix: affiliation network
+connectParam <- diag(.4, nbBlock) + 0.01 # connectivity matrix: affiliation network
 ```
 
 ### Sampling under the SBM
@@ -46,12 +46,14 @@ The function `rSBM` sample a binary network under the SBM. Let us try the aforme
 ## Graph Sampling
 mySBM <- rSBM(nNodes, connectParam, blockProp)
 ## Graph plotting
-plot(mySBM, vertex.color = igraph::V(mySBM)$memberships)
+plot(mySBM, vertex.color = V(mySBM)$memberships)
 ```
 
 ### Adding weights to the edges
 
 In **rggm**, the user can add some random weights to the edges of an existing SBM. Those weigths are drawn under a predefined distribution (only "gaussian" and "poisson" are implemented at the moment) the parameters of which are defined blocwise
+
+#### Gaussian weights
 
 We consider for instance Gaussian weights in this piece of code:
 
@@ -64,11 +66,39 @@ theta$mu    <- matrix(mu_between   , nbBlock, nbBlock); diag(theta$mu)    <- mu_
 theta$sigma <- matrix(sigma_between, nbBlock, nbBlock); diag(theta$sigma) <- sigma_within # sd
 ```
 
-Résultat convaincant
+
 ```{r Gaussian weights plot}
-mySBM <- rWeightSBM(mySBM, "gaussian", theta)
-hist(igraph::E(mySBM)$weight,  breaks = sqrt(igraph::gsize(mySBM)), freq = FALSE, xlab = "weights", main = "histogram of weights")
+mySBM_Gaussian <- rWeightSBM(mySBM, "gaussian", theta)
+hist(E(mySBM_Gaussian)$weight,  breaks = sqrt(gsize(mySBM_Gaussian)), freq = FALSE, xlab = "weights", main = "histogram of Gaussian weights")
 ```
+
+### Others weights: Poisson or Laplace
+
+At the moment, one could add Poisson or Laplace weigths as an alternative to binary or Gaussian weights on the edges:
+
+```{r Laplace and Poisson weights plot}
+## Sampling Laplace weights
+m_within   <- 4 ; s_within  <- .5
+m_between  <- 2 ; s_between <- .5
+theta <- list()
+theta$m <- matrix(m_between, nbBlock, nbBlock); diag(theta$m) <- m_within # location parameter
+theta$s <- matrix(s_between, nbBlock, nbBlock); diag(theta$s) <- s_within # scale parameters
+
+mySBM_Laplace <- rWeightSBM(mySBM, "laplace", theta)
+
+## Sampling Poisson weights
+lambda_within   <- 4
+lambda_between  <- 1
+theta <- list()
+theta$lambda <- matrix(lambda_between, nbBlock, nbBlock); diag(theta$lambda) <- lambda_within # mean/variance parameter
+#'
+mySBM_Poisson <- rWeightSBM(mySBM, "poisson", theta)
+
+par(mfrow = c(1,2))
+hist(E(mySBM_Laplace)$weight,  breaks = sqrt(gsize(mySBM_Laplace)), xlab = "weights", main = "Laplace weights")
+hist(E(mySBM_Poisson)$weight,  breaks = sqrt(gsize(mySBM_Poisson)), xlab = "weights", main = "Poisson weights")
+```
+
 
 ## Drawing multivariate Gaussian observations faithful to a the graph
 
@@ -85,10 +115,10 @@ The function `graph2prec` allows one to build a precision matrix $\boldsymbol\Om
 
 An optional argument allows to fix the conditional variance _a priori_^[conditional variances are equal to the inverse of the diagonal in a precision matrix]. This argument allows the user to indirectly tune the variances in the variance-covariance matrix $\boldsymbol\Sigma$.
 
-For instance, if we want to fix the conditional variances to 1 (a thus get variances all equal to 1), 
+For instance, if we want to fix the conditional variances to 1 (and thus get variances all equal to 1), 
 
 ```{r precision matrix}
-Omega <- graph2prec(mySBM, cond_var = rep(1, gorder(mySBM)))
+Omega <- graph2prec(mySBM_Gaussian, cond_var = rep(1, gorder(mySBM)))
 ```
 
 
@@ -98,7 +128,7 @@ The variance-covariance $\boldsymbol\Sigma$ is then obtain be inversion, since $
 Sigma <- solve(Omega)
 ```
 
-The corresponding matrices exhibit the expected strong blocwise, diagonal structure of the original affilitation graph.
+The corresponding matrices exhibit the expected strong block-diagonal structure of the original affilitation graph.
 
 ```{r plot, message = FALSE}
 par(mfrow = c(1,2))

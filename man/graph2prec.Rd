@@ -8,8 +8,8 @@ graph2prec(
   graph,
   neg_prop = 0.5,
   cond_var = NULL,
-  epsilon = 0.01,
-  delta = 0.1,
+  epsilon = 0.001,
+  delta = 0.01,
   maxIter = 10000
 )
 }
